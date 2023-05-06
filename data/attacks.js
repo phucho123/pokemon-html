@@ -10,5 +10,11 @@ const attacks = {
     damage: 25,
     type: 'Fire',
     color: 'red'
+  },
+  Irontale: {
+    name: 'Irontail',
+    damage: 25,
+    type: 'Fire',
+    color: 'red'
   }
 }

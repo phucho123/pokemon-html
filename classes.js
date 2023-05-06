@@ -95,7 +95,8 @@ class Monster extends Sprite {
     rotation = 0,
     isEnemy = false,
     name,
-    attacks
+    attacks,
+    scale
   }) {
     super({
       position,
@@ -104,27 +105,53 @@ class Monster extends Sprite {
       frames,
       sprites,
       animate,
-      rotation
+      rotation,
+      scale
     })
     this.health = 100
     this.isEnemy = isEnemy
     this.name = name
     this.attacks = attacks
+    this.image.onload = () => {
+      this.width = (this.image.width / this.frames.max) * scale
+      this.height = this.image.height * scale
+      if(this.isEnemy){
+        this.position.x = 1014-this.width-100;
+        this.position.y = 50;
+        gsap.from(this.position,{
+          x: 1024,
+          y: -50,
+          duration: 1.2,
+          yoyo: true
+        })
+        document.querySelector('#enemyHealthBar').style.width = '100%'
+      }
+      else{
+        this.position = {x:-50,y:576-this.height-100}
+        gsap.from(this.position,{
+          x: -this.width,
+          y: this.height-50,
+          duration: 1.2,
+          yoyo: true
+        })
+        document.querySelector('#playerHealthBar').style.width = '100%'
+      }
+    }
   }
-
   faint() {
     document.querySelector('#dialogueBox').innerHTML = this.name + ' fainted!'
     gsap.to(this.position, {
       y: this.position.y + 20
     })
     gsap.to(this, {
-      opacity: 0
+      opacity: 0,
     })
     audio.battle.stop()
     audio.victory.play()
   }
 
-  attack({ attack, recipient, renderedSprites }) {
+  attack({ attack, recipient, renderedSprites,player_turn }) {
+    // player_turn.val = 0
     document.querySelector('#dialogueBox').style.display = 'block'
     document.querySelector('#dialogueBox').innerHTML =
       this.name + ' used ' + attack.name
@@ -136,7 +163,7 @@ class Monster extends Sprite {
     if (this.isEnemy) rotation = -2.2
 
     recipient.health -= attack.damage
-
+    if(recipient.health <= 0 && player_turn) player_turn.val = 0
     switch (attack.name) {
       case 'Fireball':
         audio.initFireball.play()
@@ -144,22 +171,24 @@ class Monster extends Sprite {
         fireballImage.src = './img/fireball.png'
         const fireball = new Sprite({
           position: {
-            x: this.position.x,
-            y: this.position.y
+            x: this.isEnemy ? this.position.x+this.width/2 : this.position.x+this.width,
+            y: this.position.y+this.width/3
+            // x: 0,
+            // y: 0
           },
           image: fireballImage,
           frames: {
-            max: 4,
-            hold: 10
+            max: 4, //4
+            hold: 10 //10
           },
           animate: true,
           rotation
         })
-        renderedSprites.splice(1, 0, fireball)
-
+        renderedSprites.splice(2, 0, fireball)
+        // renderedSprites.push(fireball)
         gsap.to(fireball.position, {
-          x: recipient.position.x,
-          y: recipient.position.y,
+          x: recipient.position.x+recipient.width/2,
+          y: recipient.position.y+recipient.height/2,
           onComplete: () => {
             // Enemy actually gets hit
             audio.fireballHit.play()
@@ -173,14 +202,17 @@ class Monster extends Sprite {
               repeat: 5,
               duration: 0.08
             })
-
             gsap.to(recipient, {
               opacity: 0,
               repeat: 5,
               yoyo: true,
-              duration: 0.08
+              duration: 0.08,
+              onComplete: () => {
+                if(player_turn) player_turn.val = 1
+                if(recipient.health <= 0 && player_turn) player_turn.val = 0
+              }
             })
-            renderedSprites.splice(1, 1)
+            renderedSprites.splice(2, 1)
           }
         })
 
@@ -203,7 +235,6 @@ class Monster extends Sprite {
               gsap.to(healthBar, {
                 width: recipient.health + '%'
               })
-
               gsap.to(recipient.position, {
                 x: recipient.position.x + 10,
                 yoyo: true,
@@ -215,13 +246,17 @@ class Monster extends Sprite {
                 opacity: 0,
                 repeat: 5,
                 yoyo: true,
-                duration: 0.08
+                duration: 0.08,
+                onComplete: () => {
+                  if(player_turn) player_turn.val = 1
+                }
               })
             }
           })
           .to(this.position, {
             x: this.position.x
           })
+          // console.log(this.position.x);
         break
     }
   }

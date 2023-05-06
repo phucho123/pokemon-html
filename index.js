@@ -4,6 +4,7 @@ const c = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
 
+
 const collisionsMap = []
 for (let i = 0; i < collisions.length; i += 70) {
   collisionsMap.push(collisions.slice(i, 70 + i))
@@ -18,7 +19,7 @@ const charactersMap = []
 for (let i = 0; i < charactersMapData.length; i += 70) {
   charactersMap.push(charactersMapData.slice(i, 70 + i))
 }
-console.log(charactersMap)
+// console.log(charactersMap)
 
 const boundaries = []
 const offset = {
@@ -235,7 +236,7 @@ function animate() {
           rectangle2: battleZone
         }) &&
         overlappingArea > (player.width * player.height) / 2 &&
-        Math.random() < 0.01
+        Math.random() < 1 //0.01
       ) {
         // deactivate current animation loop
         window.cancelAnimationFrame(animationId)
@@ -486,3 +487,22 @@ addEventListener('click', () => {
     clicked = true
   }
 })
+
+// function moveRight(){
+//   keys.d.pressed = true
+//   lastKey = 'd'
+// }
+// function moveLeft(){
+//   keys.a.pressed = true
+//   lastKey = 'a'
+// }
+// function moveUp(){
+//   keys.w.pressed = true
+//   lastKey = 'w'
+// }
+// function moveDown(){
+//   keys.s.pressed = true
+//   lastKey = 's'
+// }
+
+
